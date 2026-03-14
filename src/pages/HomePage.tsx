@@ -4,23 +4,28 @@ import { useGameStore } from '@/stores/gameStore';
 import { Sparkles, BookOpen, RotateCcw, ChevronRight, Star } from 'lucide-react';
 
 export default function HomePage() {
-  const { currentDay, getCurrentDayProgress, getTotalWordsLearned } = useGameStore();
+  const { currentDay, getCurrentDayProgress, getTotalWordsLearned, currentDayLearnedWords } = useGameStore();
   const dayProgress = getCurrentDayProgress();
   const totalWords = getTotalWordsLearned();
 
   const getNextAction = () => {
-    if (!dayProgress) return { text: '开始游戏', path: '/game', icon: Sparkles };
+    if (!dayProgress) return { text: '开始游戏', path: '/plot', icon: Sparkles };
     
     if (!dayProgress.morningDialogueCompleted) {
-      return { text: '继续剧情', path: '/game', icon: Sparkles };
+      return { text: '继续剧情', path: '/plot', icon: Sparkles };
     }
     if (!dayProgress.studyCompleted) {
-      return { text: '开始学习', path: '/study', icon: BookOpen };
+      // 如果已经学习了至少1个单词，显示"继续学习"，否则显示"开始学习"
+      if (currentDayLearnedWords >= 1) {
+        return { text: '继续学习', path: '/study', icon: BookOpen };
+      } else {
+        return { text: '开始学习', path: '/study', icon: BookOpen };
+      }
     }
     if (!dayProgress.eveningDialogueCompleted) {
-      return { text: '继续剧情', path: '/game', icon: Sparkles };
+      return { text: '继续剧情', path: '/plot', icon: Sparkles };
     }
-    return { text: '开始新的一天', path: '/game', icon: Sparkles };
+    return { text: '开始新的一天', path: '/plot', icon: Sparkles };
   };
 
   const nextAction = getNextAction();

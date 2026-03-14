@@ -9,11 +9,10 @@ const TARGET_WORDS_PER_DAY = 10; // 每天需要学习的新单词数量
 
 export default function StudyPage() {
   const navigate = useNavigate();
-  const { currentDay, completeStudy, updateWordProgress, addKnownWord, knownWords, wordsProgress } = useGameStore();
+  const { currentDay, completeStudy, updateWordProgress, addKnownWord, knownWords, wordsProgress, scheduleReview, currentDayLearnedWords, incrementCurrentDayLearnedWords } = useGameStore();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [learnedWordsCount, setLearnedWordsCount] = useState(0); // 记录真正学习的单词数（标记为"不认识"的）
   const [viewedWords, setViewedWords] = useState<string[]>([]); // 记录当天已查看的单词ID
   const [isReviewMode, setIsReviewMode] = useState(false); // 是否处于复习模式
 
@@ -34,22 +33,30 @@ export default function StudyPage() {
     });
   }, [knownWords, viewedWords, wordsProgress]);
 
-  // 待复习的单词：状态为'learning'的单词
+  // 待复习的单词：状态为'learning'且到了复习时间的单词
   const reviewWords = useMemo(() => {
+    const currentDay = useGameStore.getState().currentDay;
+    
     return wordsData.filter(word => {
       const wordProgress = wordsProgress.find(wp => wp.wordId === word.id);
-      return wordProgress && wordProgress.status === 'learning';
+      if (!wordProgress || wordProgress.status !== 'learning') return false;
+      
+      // 检查是否到了复习时间
+      const reviewSchedule = useGameStore.getState().reviewSchedule.find(schedule => schedule.wordId === word.id);
+      if (!reviewSchedule) return false;
+      
+      return reviewSchedule.scheduledDay <= currentDay;
     });
-  }, [wordsProgress, wordsData]);
+  }, [wordsProgress]);
 
   // 当前显示的单词（学习模式或复习模式）
   const currentWord = isReviewMode ? reviewWords[currentWordIndex] : availableWords[currentWordIndex];
   const currentWordList = isReviewMode ? reviewWords : availableWords;
   
-  const progress = (learnedWordsCount / TARGET_WORDS_PER_DAY) * 100;
+  const progress = (currentDayLearnedWords / TARGET_WORDS_PER_DAY) * 100;
   
   // 检查是否已经完成学习（达到目标单词数）
-  const isLearningGoalReached = learnedWordsCount >= TARGET_WORDS_PER_DAY;
+  const isLearningGoalReached = currentDayLearnedWords >= TARGET_WORDS_PER_DAY;
 
   const handleKnowWord = () => {
     // 用户认识这个单词，永久删除该单词，学习数不变
@@ -61,16 +68,24 @@ export default function StudyPage() {
   };
 
   const handleDontKnowWord = () => {
-    // 用户不认识这个单词，移到待复习，学习数+1
+    // 用户不认识这个单词，显示详细信息
+    setShowMeaning(true);
+  };
+
+  const handleRememberWord = () => {
+    // 用户记住了这个单词，移到待复习，学习数+1
     if (currentWord) {
       updateWordProgress(currentWord.id, 'learning', 70);
+      // 安排1天后复习
+      scheduleReview(currentWord.id, 1); // 1天间隔，符合艾宾浩斯遗忘曲线
       // 只有当学习数还没达到目标时才增加计数
-      if (learnedWordsCount < TARGET_WORDS_PER_DAY) {
-        setLearnedWordsCount(prev => prev + 1);
+      if (currentDayLearnedWords < TARGET_WORDS_PER_DAY) {
+        incrementCurrentDayLearnedWords();
       }
       setViewedWords(prev => [...prev, currentWord.id]);
+      setShowMeaning(false);
+      nextWord();
     }
-    nextWord();
   };
 
   const handleReviewCorrect = () => {
@@ -91,17 +106,17 @@ export default function StudyPage() {
 
   const nextWord = () => {
     // 检查是否完成学习条件：学习数达到10 且 复习完待复习单词
-    const isLearningComplete = learnedWordsCount >= TARGET_WORDS_PER_DAY;
+    const isLearningComplete = currentDayLearnedWords >= TARGET_WORDS_PER_DAY;
     const isReviewComplete = reviewWords.length === 0 || currentWordIndex >= reviewWords.length - 1;
     
     if (isLearningComplete && isReviewComplete) {
       setIsCompleted(true);
-      completeStudy(currentDay, learnedWordsCount);
+      completeStudy(currentDay, currentDayLearnedWords);
       return;
     }
 
     // 如果学习数达到10，切换到复习模式
-    if (learnedWordsCount >= TARGET_WORDS_PER_DAY && !isReviewMode) {
+    if (currentDayLearnedWords >= TARGET_WORDS_PER_DAY && !isReviewMode) {
       setIsReviewMode(true);
       setCurrentWordIndex(0);
       setShowMeaning(false);
@@ -123,9 +138,9 @@ export default function StudyPage() {
     // 检查是否完成复习
     if (currentWordIndex >= reviewWords.length - 1) {
       // 复习完成，检查是否完成学习
-      if (learnedWordsCount >= TARGET_WORDS_PER_DAY) {
+      if (currentDayLearnedWords >= TARGET_WORDS_PER_DAY) {
         setIsCompleted(true);
-        completeStudy(currentDay, learnedWordsCount);
+        completeStudy(currentDay, currentDayLearnedWords);
         return;
       }
       // 复习完成但学习未完成，切换回学习模式
@@ -141,7 +156,8 @@ export default function StudyPage() {
   };
 
   const handleComplete = () => {
-    navigate('/game');
+    // 学习完成后，直接返回游戏主页面进入夜晚剧情
+    navigate('/plot');
   };
 
   const playPronunciation = () => {
@@ -160,7 +176,7 @@ export default function StudyPage() {
           <div className="text-6xl mb-4">🎊</div>
           <h2 className="text-2xl font-bold text-white mb-4">学习完成！</h2>
           <p className="text-gray-400 mb-2">
-            今天你已经学习了 {learnedWordsCount} 个新单词
+            今天你已经学习了 {currentDayLearnedWords} 个新单词
           </p>
           {reviewWords.length > 0 && (
             <p className="text-gray-400 mb-2">
@@ -191,11 +207,11 @@ export default function StudyPage() {
         >
           <div className="text-6xl mb-4">🎊</div>
           <h2 className="text-2xl font-bold text-white mb-4">
-            {learnedWordsCount >= TARGET_WORDS_PER_DAY ? "学习完成！" : "太棒了！"}
+            {currentDayLearnedWords >= TARGET_WORDS_PER_DAY ? "学习完成！" : "太棒了！"}
           </h2>
           <p className="text-gray-400 mb-2">
-            {learnedWordsCount >= TARGET_WORDS_PER_DAY 
-              ? `今天你已经学习了 ${learnedWordsCount} 个新单词`
+            {currentDayLearnedWords >= TARGET_WORDS_PER_DAY 
+              ? `今天你已经学习了 ${currentDayLearnedWords} 个新单词`
               : "词库中的单词你都已经学习过了！"}
           </p>
           <p className="text-lexicon-gold-400 mb-6">单词星的能量正在恢复...</p>
@@ -221,7 +237,7 @@ export default function StudyPage() {
           </h1>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-400">
-              新单词: {learnedWordsCount} / {TARGET_WORDS_PER_DAY}
+              新单词: {currentDayLearnedWords} / {TARGET_WORDS_PER_DAY}
             </div>
             {isReviewMode && (
               <div className="text-sm text-star-purple-400">
@@ -241,7 +257,7 @@ export default function StudyPage() {
           />
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          还需要学习 {Math.max(0, TARGET_WORDS_PER_DAY - learnedWordsCount)} 个新单词
+          还需要学习 {Math.max(0, TARGET_WORDS_PER_DAY - currentDayLearnedWords)} 个新单词
           {isReviewMode && `，还需复习 ${reviewWords.length - currentWordIndex - 1} 个单词`}
         </div>
       </div>
@@ -264,14 +280,14 @@ export default function StudyPage() {
             <h2 className="text-2xl font-bold text-white mb-4">🎉 学习完成！</h2>
             <p className="text-gray-300 mb-6">你已经完成了今天的学习目标</p>
             <div className="text-lg text-lexicon-gold-300 mb-8">
-              共学习了 {learnedWordsCount} 个新单词
+              共学习了 {currentDayLearnedWords} 个新单词
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
                 setIsCompleted(true);
-                completeStudy(currentDay, learnedWordsCount);
+                completeStudy(currentDay, currentDayLearnedWords);
               }}
               className="py-4 px-8 bg-gradient-to-r from-star-purple-500 to-lexicon-gold-500 rounded-xl text-white font-semibold transition-colors flex items-center space-x-2"
             >
@@ -386,6 +402,14 @@ export default function StudyPage() {
                     <span>正确</span>
                   </button>
                 </>
+              ) : showMeaning ? (
+                <button
+                  onClick={handleRememberWord}
+                  className="col-span-2 flex items-center justify-center space-x-2 py-4 bg-gradient-to-r from-star-purple-600 to-lexicon-gold-600 rounded-xl text-white font-medium hover:from-star-purple-500 hover:to-lexicon-gold-500 transition-all"
+                >
+                  <Check className="w-5 h-5" />
+                  <span>我记住了</span>
+                </button>
               ) : (
                 <>
                   <button

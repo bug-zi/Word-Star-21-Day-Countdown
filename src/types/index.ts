@@ -27,6 +27,13 @@ export interface WordProgress {
   lastReviewed: string;
   nextReview: string;
   reviewCount: number;
+  dayLearned?: number; // 学习当天的项目天数
+}
+
+export interface ReviewSchedule {
+  wordId: string;
+  scheduledDay: number; // 复习的项目天数
+  reviewInterval: number;
 }
 
 export interface DayProgress {

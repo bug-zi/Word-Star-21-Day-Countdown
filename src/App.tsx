@@ -37,7 +37,7 @@ function App() {
           <ProloguePage />
         } />
         
-        <Route path="/game" element={
+        <Route path="/plot" element={
           !isAuthenticated ? <Navigate to="/login" /> :
           !isPrologueCompleted ? <Navigate to="/prologue" /> :
           <GamePage />

@@ -66,7 +66,7 @@ export const day1MorningDialogues: DialogueLine[] = [
   {
     id: 'd1m1',
     speaker: 'lexicon',
-    text: '欢迎来到第1天！（屏幕显示：📚）今天的目标：认识10个新朋友。',
+    text: '欢迎来到第1天！今天的目标：认识10个新朋友。',
     emotion: '😊',
   },
   {

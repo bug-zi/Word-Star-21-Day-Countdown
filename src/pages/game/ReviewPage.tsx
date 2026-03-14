@@ -1,73 +1,133 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
 import { wordsData } from '@/data/words';
-import { RotateCcw, Check, X, Volume2, Brain, Calendar } from 'lucide-react';
+import { RotateCcw, Volume2, Brain, Calendar } from 'lucide-react';
 import type { WordProgress, Word } from '@/types';
 
 interface ReviewItem {
   word: Word;
   progress: WordProgress;
   daysSinceLastReview: number;
+  options: {
+    meaning: string;
+    isCorrect: boolean;
+  }[];
 }
 
 export default function ReviewPage() {
-  const { wordsProgress, updateWordProgress } = useGameStore();
+  const navigate = useNavigate();
+  const { updateWordProgress, getWordsDueForReview } = useGameStore();
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [stats, setStats] = useState({ correct: 0, incorrect: 0 });
+  
+  // 新增状态：管理答题结果和流程控制
+  const [hasAnswered, setHasAnswered] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
 
+  // Generate distraction options for multiple choice
+  const generateDistractors = (correctWord: Word, count: number = 3): string[] => {
+    // Get all other words
+    const otherWords = wordsData.filter(w => w.id !== correctWord.id);
+    // Shuffle and take the first 'count' words
+    const shuffled = [...otherWords].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count).map(w => w.meaning);
+  };
+
+  // Shuffle array
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // 只在组件挂载时生成复习列表
   useEffect(() => {
-    // Get words that need review (simplified logic)
-    const items: ReviewItem[] = wordsProgress
-      .filter(wp => wp.status !== 'new')
+    // Get words that need review based on review schedule
+    const dueWords = getWordsDueForReview();
+    const items: ReviewItem[] = dueWords
       .map(wp => {
         const word = wordsData.find(w => w.id === wp.wordId);
+        if (!word) return null;
+        
         const lastReviewed = new Date(wp.lastReviewed);
         const daysSinceLastReview = Math.floor(
           (new Date().getTime() - lastReviewed.getTime()) / (1000 * 60 * 60 * 24)
         );
+        
+        // Generate distractors and create options
+        const distractors = generateDistractors(word);
+        const options = [
+          { meaning: word.meaning, isCorrect: true },
+          ...distractors.map(meaning => ({ meaning, isCorrect: false }))
+        ];
+        
+        // Shuffle options
+        const shuffledOptions = shuffleArray(options);
+        
         return {
-          word: word!,
+          word,
           progress: wp,
           daysSinceLastReview,
+          options: shuffledOptions
         };
       })
-      .filter(item => item.word)
-      .sort((a, b) => b.daysSinceLastReview - a.daysSinceLastReview)
-      .slice(0, 20); // Limit to 20 words per review session
+      .filter((item): item is ReviewItem => item !== null)
+      .sort((a, b) => {
+        // First sort by days since last review (descending)
+        if (b.daysSinceLastReview !== a.daysSinceLastReview) {
+          return b.daysSinceLastReview - a.daysSinceLastReview;
+        }
+        // Then sort by familiarity (ascending)
+        return a.progress.familiarity - b.progress.familiarity;
+      });
 
     setReviewItems(items);
-  }, [wordsProgress]);
+  }, []); // 空依赖数组，只在挂载时执行
 
   const currentItem = reviewItems[currentIndex];
   const progress = reviewItems.length > 0 ? ((currentIndex + 1) / reviewItems.length) * 100 : 0;
 
-  const handleCorrect = () => {
-    if (currentItem) {
-      const newFamiliarity = Math.min(currentItem.progress.familiarity + 10, 100);
-      const newStatus = newFamiliarity >= 80 ? 'mastered' : 'reviewing';
+  // Handle option selection
+  const handleOptionSelect = (optionIndex: number, correct: boolean) => {
+    if (hasAnswered || !currentItem) return; // 如果已经回答过，不再处理
+    
+    setHasAnswered(true);
+    setIsCorrect(correct);
+    setSelectedOptionIndex(optionIndex);
+    
+    // 更新单词进度（但不立即进入下一个）
+    if (correct) {
+      const newFamiliarity = Math.min(currentItem.progress.familiarity + 15, 100);
+      const newStatus = newFamiliarity >= 90 ? 'mastered' : 'reviewing';
       updateWordProgress(currentItem.word.id, newStatus, newFamiliarity);
       setStats(prev => ({ ...prev, correct: prev.correct + 1 }));
-    }
-    nextItem();
-  };
-
-  const handleIncorrect = () => {
-    if (currentItem) {
-      const newFamiliarity = Math.max(currentItem.progress.familiarity - 5, 0);
-      updateWordProgress(currentItem.word.id, 'learning', newFamiliarity);
+    } else {
+      const newFamiliarity = Math.max(currentItem.progress.familiarity - 10, 0);
+      const newStatus = newFamiliarity < 50 ? 'learning' : 'reviewing';
+      updateWordProgress(currentItem.word.id, newStatus, newFamiliarity);
       setStats(prev => ({ ...prev, incorrect: prev.incorrect + 1 }));
     }
+  };
+
+  const handleRemembered = () => {
+    // 重置状态并进入下一个单词
+    setHasAnswered(false);
+    setIsCorrect(false);
+    setSelectedOptionIndex(null);
     nextItem();
   };
 
   const nextItem = () => {
     if (currentIndex < reviewItems.length - 1) {
       setCurrentIndex(prev => prev + 1);
-      setShowAnswer(false);
     } else {
       setIsCompleted(true);
     }
@@ -121,11 +181,11 @@ export default function ReviewPage() {
             正确率: {Math.round((stats.correct / (stats.correct + stats.incorrect)) * 100)}%
           </p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => navigate('/study')}
             className="flex items-center justify-center space-x-2 w-full py-3 bg-gradient-to-r from-star-purple-600 to-lexicon-gold-600 rounded-xl text-white font-medium hover:from-star-purple-500 hover:to-lexicon-gold-500 transition-all"
           >
             <RotateCcw className="w-5 h-5" />
-            <span>再次复习</span>
+            <span>开始学习新单词</span>
           </button>
         </motion.div>
       </div>
@@ -205,48 +265,95 @@ export default function ReviewPage() {
 
           {/* Answer Section */}
           <div className="glass rounded-2xl p-6 mb-6">
-            {!showAnswer ? (
-              <button
-                onClick={() => setShowAnswer(true)}
-                className="w-full py-4 bg-gradient-to-r from-star-purple-600 to-lexicon-gold-600 rounded-xl text-white font-medium hover:from-star-purple-500 hover:to-lexicon-gold-500 transition-all"
-              >
-                显示答案
-              </button>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-lexicon-gold-400 mb-2">
-                    {currentItem.word.meaning}
-                  </div>
-                  <div className="text-gray-400 italic">
-                    "{currentItem.word.example}"
-                  </div>
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className={`text-2xl font-bold mb-2 ${
+                  hasAnswered 
+                    ? (isCorrect ? 'text-green-400' : 'text-red-400')
+                    : 'text-lexicon-gold-400'
+                }`}>
+                  {hasAnswered 
+                    ? (isCorrect ? '✓ 回答正确' : '✗ 回答错误')
+                    : '选择正确的含义'
+                  }
                 </div>
+                {hasAnswered && (
+                  <div className="text-gray-400 text-sm">
+                    正确答案是：{currentItem.options.find(opt => opt.isCorrect)?.meaning}
+                  </div>
+                )}
+              </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                  <button
-                    onClick={handleIncorrect}
-                    className="flex items-center justify-center space-x-2 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-xl text-red-400 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                    <span>没记住</span>
-                  </button>
+              {/* Multiple Choice Options */}
+              <div className="space-y-4">
+                {currentItem.options.map((option, index) => {
+                  // 计算按钮样式
+                  let buttonClass = "w-full py-4 px-6 border rounded-xl text-white transition-all text-left ";
+                  let letterClass = "w-8 h-8 rounded-full flex items-center justify-center font-medium ";
                   
-                  <button
-                    onClick={handleCorrect}
-                    className="flex items-center justify-center space-x-2 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-green-400 transition-colors"
-                  >
-                    <Check className="w-5 h-5" />
-                    <span>记住了</span>
-                  </button>
-                </div>
-              </motion.div>
-            )}
+                  if (hasAnswered) {
+                    if (option.isCorrect) {
+                      // 正确选项显示绿色
+                      buttonClass += "bg-green-500/20 border-green-500/50 ";
+                      letterClass += "bg-green-500 text-white ";
+                    } else if (index === selectedOptionIndex && !isCorrect) {
+                      // 用户选错的选项显示红色
+                      buttonClass += "bg-red-500/20 border-red-500/50 ";
+                      letterClass += "bg-red-500 text-white ";
+                    } else {
+                      // 其他选项变灰
+                      buttonClass += "bg-white/5 border-white/10 opacity-50 ";
+                      letterClass += "bg-white/10 text-gray-400 ";
+                    }
+                  } else {
+                    // 未回答时的默认样式
+                    buttonClass += "bg-white/5 border-white/10 hover:bg-white/10 ";
+                    letterClass += "bg-white/10 text-gray-400 ";
+                  }
+                  
+                  return (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleOptionSelect(index, option.isCorrect)}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      disabled={hasAnswered}
+                      className={buttonClass}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={letterClass}>
+                          {String.fromCharCode(65 + index)} {/* A, B, C, D */}
+                        </div>
+                        <div className="text-lg">{option.meaning}</div>
+                        {hasAnswered && option.isCorrect && (
+                          <span className="ml-auto text-green-400">✓</span>
+                        )}
+                        {hasAnswered && index === selectedOptionIndex && !isCorrect && (
+                          <span className="ml-auto text-red-400">✗</span>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* 我记住了按钮 */}
+              {hasAnswered && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={handleRemembered}
+                  className={`w-full py-4 px-6 rounded-xl text-white font-semibold transition-all ${
+                    isCorrect 
+                      ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500'
+                      : 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500'
+                  }`}
+                >
+                  我记住了
+                </motion.button>
+              )}
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>

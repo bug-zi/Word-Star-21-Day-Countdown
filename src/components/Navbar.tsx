@@ -9,7 +9,7 @@ export default function Navbar() {
 
   const navItems = [
     { path: '/', label: '首页', icon: Home },
-    { path: '/game', label: '剧情', icon: Sparkles },
+    { path: '/plot', label: '剧情', icon: Sparkles },
     { path: '/study', label: '学习', icon: BookOpen },
     { path: '/review', label: '复习', icon: RotateCcw },
     { path: '/profile', label: '我的', icon: User },

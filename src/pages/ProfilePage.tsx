@@ -12,10 +12,12 @@ import {
   Target,
   BookMarked,
   ChevronRight,
-  X
+  X,
+  BarChart3
 } from 'lucide-react';
 import { wordsData } from '@/data/words';
 import { Marquee } from '@/components/Marquee';
+import { StudyStats } from '@/components/StudyStats';
 
 export default function ProfilePage() {
   const { user, logout, currentDay, getTotalWordsLearned, daysProgress, goToNextDay, resetGame, wordsProgress, knownWords } = useGameStore();
@@ -25,7 +27,25 @@ export default function ProfilePage() {
   const [showAllWords, setShowAllWords] = useState(false); // 控制显示所有已学单词的模态框
   
   // 学习成果相关状态
-  const [learnedWords, setLearnedWords] = useState<any[]>([]);
+  const [learnedWords, setLearnedWords] = useState<Array<{
+    id: string;
+    word: string;
+    meaning: string;
+    pronunciation: string;
+    example: string;
+    level: 'easy' | 'medium' | 'hard';
+    day: number;
+    isSpecial?: boolean;
+    characterName?: string;
+    progress: {
+      wordId: string;
+      status: 'new' | 'learning' | 'reviewing' | 'mastered';
+      familiarity: number;
+      lastReviewed: string;
+      nextReview: string;
+      reviewCount: number;
+    } | undefined;
+  }>>([]);
 
   const completedDays = daysProgress.filter(dp => dp.isCompleted).length;
   const streakDays = user?.streakDays || 0;
@@ -104,7 +124,7 @@ export default function ProfilePage() {
         <div className="text-gray-400">请先登录</div>
       </div>
     );
-  }
+}
 
   return (
     <div className="space-y-6">
@@ -339,15 +359,17 @@ export default function ProfilePage() {
                         <div className="text-lg font-semibold text-white group-hover:text-star-purple-400 transition-colors">{word.word}</div>
                         <div className="text-sm text-gray-400 mt-1">{word.meaning}</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          学习时间: {new Date(word.progress.lastReviewed).toLocaleDateString('zh-CN')}
+                          学习时间: {word.progress ? `第${word.day}天` : '未知'}
                         </div>
                       </div>
                       <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        word.progress.familiarity >= 80 ? 'bg-green-500/20 text-green-400' :
-                        word.progress.familiarity >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-orange-500/20 text-orange-400'
+                        word.progress ? 
+                          (word.progress.familiarity >= 80 ? 'bg-green-500/20 text-green-400' :
+                          word.progress.familiarity >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-orange-500/20 text-orange-400') :
+                          'bg-gray-500/20 text-gray-400'
                       }`}>
-                        {word.progress.familiarity}%
+                        {word.progress ? word.progress.familiarity : 0}%
                       </div>
                     </div>
                   </motion.div>
@@ -356,6 +378,22 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+      </motion.div>
+
+      {/* 学习统计图表 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="mt-8"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">
+            <BarChart3 className="w-6 h-6 mr-2 inline" />
+            学习统计
+          </h2>
+        </div>
+        <StudyStats />
       </motion.div>
 
       {/* Debug Buttons (Testing Only) */}
@@ -518,15 +556,17 @@ export default function ProfilePage() {
                         <div className="text-lg font-semibold text-white">{word.word}</div>
                         <div className="text-sm text-gray-400 mt-1">{word.meaning}</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          学习时间: {new Date(word.progress.lastReviewed).toLocaleDateString('zh-CN')}
+                          学习时间: {word.progress ? `第${word.day}天` : '未知'}
                         </div>
                       </div>
                       <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        word.progress.familiarity >= 80 ? 'bg-green-500/20 text-green-400' :
-                        word.progress.familiarity >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-orange-500/20 text-orange-400'
+                        word.progress ? 
+                          (word.progress.familiarity >= 80 ? 'bg-green-500/20 text-green-400' :
+                          word.progress.familiarity >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-orange-500/20 text-orange-400') :
+                          'bg-gray-500/20 text-gray-400'
                       }`}>
-                        {word.progress.familiarity}%
+                        {word.progress ? word.progress.familiarity : 0}%
                       </div>
                     </div>
                   </motion.div>

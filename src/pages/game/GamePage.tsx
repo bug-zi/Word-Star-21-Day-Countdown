@@ -13,7 +13,8 @@ export default function GamePage() {
     getCurrentDayProgress, 
     completeMorningDialogue, 
     completeEveningDialogue,
-    goToNextDay 
+    goToNextDay,
+    hasWordsDueForReview
   } = useGameStore();
   
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
@@ -40,7 +41,14 @@ export default function GamePage() {
     if (isLastDialogue) {
       if (currentScene === 'morning') {
         completeMorningDialogue(currentDay);
-        navigate('/study');
+        // 检查是否有需要复习的单词
+        if (hasWordsDueForReview()) {
+          // 有需要复习的单词，先跳转到复习页面
+          navigate('/review');
+        } else {
+          // 没有需要复习的单词，直接进入学习页面
+          navigate('/study');
+        }
       } else if (currentScene === 'evening') {
         completeEveningDialogue(currentDay);
         // Show completion or go to next day
@@ -51,7 +59,14 @@ export default function GamePage() {
   };
 
   const handleGoToStudy = () => {
-    navigate('/study');
+    // 检查是否有需要复习的单词
+    if (hasWordsDueForReview()) {
+      // 有需要复习的单词，先跳转到复习页面
+      navigate('/review');
+    } else {
+      // 没有需要复习的单词，直接进入学习页面
+      navigate('/study');
+    }
   };
 
   const handleNextDay = () => {
