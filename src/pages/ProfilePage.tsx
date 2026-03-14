@@ -48,6 +48,7 @@ export default function ProfilePage() {
       })
       .sort((a, b) => {
         // 按学习时间排序，最新学习的在前面
+        if (!a.progress || !b.progress) return 0;
         return new Date(b.progress.lastReviewed).getTime() - new Date(a.progress.lastReviewed).getTime();
       });
     
