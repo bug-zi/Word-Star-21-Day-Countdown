@@ -258,7 +258,11 @@ export default function ReviewPage() {
 
               <div className="flex items-center justify-center space-x-1 text-sm text-gray-500">
                 <Calendar className="w-4 h-4" />
-                <span>{currentItem.daysSinceLastReview} 天前学习</span>
+                <span>
+                  {currentItem.daysSinceLastReview === 0 
+                    ? '今天学习' 
+                    : `${currentItem.daysSinceLastReview} 天前学习`}
+                </span>
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Layout from '@/components/Layout';
 import LoginPage from '@/pages/auth/LoginPage';
@@ -9,9 +10,23 @@ import GamePage from '@/pages/game/GamePage';
 import StudyPage from '@/pages/game/StudyPage';
 import ReviewPage from '@/pages/game/ReviewPage';
 import ProfilePage from '@/pages/ProfilePage';
+import ExplorePage from '@/pages/ExplorePage';
+import ArticlesPage from '@/pages/explore/ArticlesPage';
+import MusicPage from '@/pages/explore/MusicPage';
+import MoviesPage from '@/pages/explore/MoviesPage';
+import CommunityPage from '@/pages/explore/CommunityPage';
 
 function App() {
-  const { isAuthenticated, isPrologueCompleted } = useGameStore();
+  const gameStore = useGameStore();
+  const { isAuthenticated, isPrologueCompleted, currentDay, daysProgress, initAuth } = gameStore;
+
+  // 初始化认证状态（检查游客模式）
+  useEffect(() => {
+    initAuth();
+  }, []);
+
+  // 获取当前天的进度
+  const currentDayProgress = daysProgress.find(dp => dp.day === currentDay);
 
   return (
     <Routes>
@@ -43,15 +58,43 @@ function App() {
           <GamePage />
         } />
         
+        <Route path="/explore" element={
+          !isAuthenticated ? <Navigate to="/login" /> :
+          !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          <ExplorePage />
+        } />
+        <Route path="/explore/articles" element={
+          !isAuthenticated ? <Navigate to="/login" /> :
+          !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          <ArticlesPage />
+        } />
+        <Route path="/explore/music" element={
+          !isAuthenticated ? <Navigate to="/login" /> :
+          !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          <MusicPage />
+        } />
+        <Route path="/explore/movies" element={
+          !isAuthenticated ? <Navigate to="/login" /> :
+          !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          <MoviesPage />
+        } />
+        <Route path="/explore/community" element={
+          !isAuthenticated ? <Navigate to="/login" /> :
+          !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          <CommunityPage />
+        } />
+        
         <Route path="/study" element={
           !isAuthenticated ? <Navigate to="/login" /> :
           !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          !currentDayProgress?.morningDialogueCompleted ? <Navigate to="/plot" /> :
           <StudyPage />
         } />
         
         <Route path="/review" element={
           !isAuthenticated ? <Navigate to="/login" /> :
           !isPrologueCompleted ? <Navigate to="/prologue" /> :
+          !currentDayProgress?.morningDialogueCompleted ? <Navigate to="/plot" /> :
           <ReviewPage />
         } />
         

@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
-import { Home, BookOpen, RotateCcw, User, Sparkles } from 'lucide-react';
+import { Home, BookOpen, RotateCcw, User, Sparkles, Globe } from 'lucide-react';
 
 export default function Navbar() {
   const location = useLocation();
@@ -12,6 +12,7 @@ export default function Navbar() {
     { path: '/plot', label: '剧情', icon: Sparkles },
     { path: '/study', label: '学习', icon: BookOpen },
     { path: '/review', label: '复习', icon: RotateCcw },
+    { path: '/explore', label: '探索', icon: Globe },
     { path: '/profile', label: '我的', icon: User },
   ];
 

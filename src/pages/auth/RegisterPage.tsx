@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { authApi } from '@/services/api';
 import { Sparkles, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -27,23 +28,27 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('RegisterPage: calling authApi.register with', { username, email });
+      // 调用后端注册 API
+      const response = await authApi.register({
+        username,
+        email,
+        password,
+      });
+      console.log('RegisterPage: register success', response);
       
-      // Mock user data
-      const user = {
-        id: '1',
-        username: username,
-        email: email,
-        createdAt: new Date().toISOString(),
-        streakDays: 0,
-        totalWordsLearned: 0,
-      };
-
-      login(user);
+      // 保存令牌
+      authApi.saveTokens(response.accessToken, response.refreshToken);
+      
+      // 登录用户
+      login(response.user);
       navigate('/prologue');
-    } catch (err) {
-      setError('注册失败，请稍后重试');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('注册失败，请稍后重试');
+      }
     } finally {
       setIsLoading(false);
     }

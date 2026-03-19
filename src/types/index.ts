@@ -102,3 +102,36 @@ export interface ReviewItem {
   familiarity: number;
   isDue: boolean;
 }
+
+// API 相关类型
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface UserProgress {
+  userId: string;
+  currentDay: number;
+  isPrologueCompleted: boolean;
+  currentScene: 'prologue' | 'morning' | 'study' | 'evening' | 'completed';
+  streakDays: number;
+  totalWordsLearned: number;
+}

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
-import { Sparkles, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { authApi, progressApi } from '@/services/api';
+import { Sparkles, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,25 +21,83 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 调用后端登录 API
+      const response = await authApi.login({ email, password });
       
-      // Mock user data
-      const user = {
-        id: '1',
-        username: '探险家',
-        email: email,
+      // 保存令牌
+      authApi.saveTokens(response.accessToken, response.refreshToken);
+      
+      // 登录用户
+      login(response.user);
+      
+      // 从后端加载用户进度
+      try {
+        const progressData = await progressApi.getUserProgress();
+        if (progressData.userProgress) {
+          useGameStore.getState().syncWithBackend(progressData);
+        }
+        
+        // 加载单词进度
+        const { studyApi } = await import('@/services/api');
+        const wordProgressData = await studyApi.getWordProgress();
+        if (wordProgressData && wordProgressData.length > 0) {
+          const store = useGameStore.getState();
+          store.setWordsProgress(wordProgressData);
+        }
+        
+        // 加载复习计划
+        const reviewScheduleData = await studyApi.getReviewSchedule();
+        if (reviewScheduleData && reviewScheduleData.length > 0) {
+          const store = useGameStore.getState();
+          store.setReviewSchedule(reviewScheduleData.map(rs => ({
+            wordId: rs.wordId,
+            scheduledDay: rs.scheduledDay,
+            reviewInterval: rs.reviewInterval,
+          })));
+        }
+      } catch (progressErr) {
+        console.error('加载用户进度失败:', progressErr);
+      }
+      
+      navigate('/');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('登录失败，请检查邮箱和密码');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 游客模式登录
+  const handleGuestLogin = async () => {
+    setError('');
+    setIsGuestLoading(true);
+
+    try {
+      // 生成随机游客账号
+      const guestId = Math.random().toString(36).substring(2, 10);
+      const guestUser = {
+        id: `guest-${guestId}`,
+        username: `游客${guestId.substring(0, 4)}`,
+        email: `guest-${guestId}@wordstar.local`,
         createdAt: new Date().toISOString(),
         streakDays: 0,
         totalWordsLearned: 0,
       };
 
-      login(user);
+      // 游客模式使用本地存储
+      localStorage.setItem('wordstar_guest_mode', 'true');
+      localStorage.setItem('wordstar_guest_user', JSON.stringify(guestUser));
+      
+      login(guestUser);
       navigate('/');
     } catch (err) {
-      setError('登录失败，请检查邮箱和密码');
+      setError('游客登录失败，请重试');
     } finally {
-      setIsLoading(false);
+      setIsGuestLoading(false);
     }
   };
 
@@ -123,6 +183,23 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* 分隔线 */}
+          <div className="my-6 flex items-center">
+            <div className="flex-1 h-px bg-white/10"></div>
+            <span className="px-4 text-gray-500 text-sm">或</span>
+            <div className="flex-1 h-px bg-white/10"></div>
+          </div>
+
+          {/* 游客模式按钮 */}
+          <button
+            onClick={handleGuestLogin}
+            disabled={isGuestLoading}
+            className="w-full py-3 bg-white/5 border border-white/20 rounded-xl text-white font-medium hover:bg-white/10 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <User className="w-5 h-5" />
+            {isGuestLoading ? '进入中...' : '游客模式（数据存本地）'}
+          </button>
+
           <div className="mt-6 text-center">
             <p className="text-gray-400">
               还没有账号？{' '}
@@ -132,6 +209,18 @@ export default function LoginPage() {
             </p>
           </div>
         </motion.div>
+
+        {/* 说明文字 */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-center text-gray-500 text-sm mt-6"
+        >
+          登录账号：数据云端同步，换设备不丢失
+          <br />
+          游客模式：数据仅保存在当前设备
+        </motion.p>
       </div>
     </div>
   );

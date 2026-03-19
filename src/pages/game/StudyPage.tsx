@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
@@ -57,6 +57,21 @@ export default function StudyPage() {
   
   // 检查是否已经完成学习（达到目标单词数）
   const isLearningGoalReached = currentDayLearnedWords >= TARGET_WORDS_PER_DAY;
+
+  // 当学习目标达成时，自动设置完成状态
+  useEffect(() => {
+    if (isLearningGoalReached && !isCompleted) {
+      setIsCompleted(true);
+      completeStudy(currentDay, currentDayLearnedWords);
+    }
+  }, [isLearningGoalReached, isCompleted, currentDay, currentDayLearnedWords, completeStudy]);
+
+  // 检查是否有待复习的单词，如果有则跳转到复习页面
+  useEffect(() => {
+    if (reviewWords.length > 0 && !isReviewMode) {
+      navigate('/review');
+    }
+  }, [reviewWords.length, isReviewMode, navigate]);
 
   const handleKnowWord = () => {
     // 用户认识这个单词，永久删除该单词，学习数不变
@@ -176,7 +191,7 @@ export default function StudyPage() {
           <div className="text-6xl mb-4">🎊</div>
           <h2 className="text-2xl font-bold text-white mb-4">学习完成！</h2>
           <p className="text-gray-400 mb-2">
-            今天你已经学习了 {currentDayLearnedWords} 个新单词
+            今天你已经学习了10个新单词
           </p>
           {reviewWords.length > 0 && (
             <p className="text-gray-400 mb-2">
@@ -264,38 +279,7 @@ export default function StudyPage() {
 
       {/* Word Card or Completion Message */}
       <AnimatePresence mode="wait">
-        {isLearningGoalReached ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex-1 flex flex-col items-center justify-center text-center"
-          >
-            <div className="w-32 h-32 mb-6">
-              <img
-                src="/image/单词居民1.png"
-                alt="单词居民"
-                className="w-full h-full object-cover rounded-full border-4 border-star-purple-500/50 glow-purple"
-              />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-4">🎉 学习完成！</h2>
-            <p className="text-gray-300 mb-6">你已经完成了今天的学习目标</p>
-            <div className="text-lg text-lexicon-gold-300 mb-8">
-              共学习了 {currentDayLearnedWords} 个新单词
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setIsCompleted(true);
-                completeStudy(currentDay, currentDayLearnedWords);
-              }}
-              className="py-4 px-8 bg-gradient-to-r from-star-purple-500 to-lexicon-gold-500 rounded-xl text-white font-semibold transition-colors flex items-center space-x-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>继续剧情</span>
-            </motion.button>
-          </motion.div>
-        ) : (
+        {!isCompleted && (
           <motion.div
             key={currentWord.id}
             initial={{ opacity: 0, x: 50 }}

@@ -1,66 +1,130 @@
 import type { StoryScene, DialogueLine } from '@/types';
 
-export const prologueDialogues: DialogueLine[] = [
+export const prologueDialogues1: DialogueLine[] = [
   {
-    id: 'p1',
+    id: 'm1p1',
     speaker: 'narrator',
-    text: '【航行员日志】今天是航行第247天。一切正常。目标：寻找适合人类殖民的类地星球。地球资源正在枯竭，我们需要新的家园。',
+    text: '【航行员日志】今天是航行的第247天，Promise号一切正常。',
   },
   {
-    id: 'p2',
-    speaker: 'narrator',
-    text: '祖父曾来过这个扇区。但他从不告诉我具体经历了什么。他说："如果有一天你也去了那里，会明白为什么我从不谈论它。"',
-  },
-  {
-    id: 'p3',
-    speaker: 'narrator',
-    text: '【系统警告】⚠️ 检测到未知能量波动 ⚠️ 引力异常 ⚠️ 传感器离线',
-  },
-  {
-    id: 'p4',
-    speaker: 'narrator',
-    text: '【AI助手】"未知引力源正在捕获飞船。无法摆脱。预计30秒后进入重力井。燃料储备...异常消耗。我们被某种东西正在吸取能量。"',
-  },
-  {
-    id: 'p5',
-    speaker: 'narrator',
-    text: '【画面】紫色漩涡出现，飞船被卷入，仪表盘全部变红，意识逐渐模糊...',
-  },
-  {
-    id: 'p6',
-    speaker: 'narrator',
-    text: '（透过破碎舷窗看到紫色天空）（发光的小实体在移动）（失去意识）',
-  },
-  {
-    id: 'p7',
-    speaker: 'lexicon',
-    text: '你好，年轻的探险家。恭喜你在单词星成功迫降。虽然"成功"这个词...可能需要重新定义。',
-    emotion: '😊',
-  },
-  {
-    id: 'p8',
-    speaker: 'lexicon',
-    text: '欢迎来到单词星。宇宙中最后一个词汇庇护所。这些小家伙...他们就是单词居民。',
-    emotion: '✨',
-  },
-  {
-    id: 'p9',
+    id: 'm1p2',
     speaker: 'user',
-    text: '这些...他们有意识吗？',
+    text: '祖父曾告诉我："承诺……不是对别人说的，是对自己。"',
   },
   {
-    id: 'p10',
-    speaker: 'lexicon',
-    text: '哦，非常有！每个单词都是一段被遗忘的记忆，一段等待被重述的故事。而你...很幸运地成为了第5位在过去的100年里迫降于此的探险家。',
-    emotion: '📊',
+    id: 'm1p3',
+    speaker: 'narrator',
+    text: '【AI助手】检测到未知引力波。特征：与50年前祖父失踪航线吻合。距离：0.3光年。',
   },
   {
-    id: 'p11',
-    speaker: 'lexicon',
-    text: '你的飞船需要重新充能。我有能量。但我需要你帮我做一些小任务。每天，认识至少10个单词居民。坚持21天，收集210个单词的认知能量。我就为你提供返航的燃料。很简单，对吧？',
-    emotion: '🤔',
+    id: 'm1p4',
+    speaker: 'user',
+    text: '什么！这...这不可能！',
+  },
+  {
+    id: 'm1p5',
+    speaker: 'narrator',
+    text: '【系统AI】引力波频率在发送信息。解码中……',
+  },
+  {
+    id: 'm1p6',
+    speaker: 'narrator',
+    text: '【屏幕】Promise... keep... coming... home',
+  },
+  {
+    id: 'm1p7',
+    speaker: 'user',
+    text: '这是……50年前的信号？！',
+  },
+  {
+    id: 'm1p8',
+    speaker: 'narrator',
+    text: '【系统AI】不。这是现在正在发送的信号。信号源距离：就在前方。',
+  },
+  {
+    id: 'm1p9',
+    speaker: 'user',
+    text: '调转航向！',
   },
 ];
+export const prologueDialogues2: DialogueLine[] = [
+  {
+    id: 'm2p1',
+    speaker: 'narrator',
+    text: '（前方出现紫色虫洞——不是自然现象）',
+  },
+  {
+    id: 'm2p2',
+    speaker: 'narrator',
+    text: '【系统AI】警告！这不是普通虫洞！检测到认知力场——它在读取你的……记忆！',
+  },
+  {
+    id: 'm2p3',
+    speaker: 'narrator',
+    text: '(主角记忆画面快速闪现：童年祖父讲故事的夜晚、祖父失踪那天的告别、自己出发探险前的决心)',
+  },
+  {
+    id: 'm2p4',
+    speaker: 'narrator',
+    text: '【系统AI】它在测试你...是否值得被记住。',
+  },
+  {
+    id: 'm2p5',
+    speaker: 'user',
+    text: '什么意思？！',
+  },
+  {
+    id: 'm2p6',
+    speaker: 'narrator',
+    text: '【系统AI】不确定。但如果你不想被吞噬，就必须记住某些东西。',
+  },
+  {
+    id: 'm2p7',
+    speaker: 'narrator',
+    text: '（虫洞突然稳定，形成通道）',
+  },
+  {
+    id: 'm2p8',
+    speaker: 'narrator',
+    text: '【系统AI】通道……打开了。它在等你。',
+  },
+  {
+    id: 'm2p9',
+    speaker: 'user',
+    text: '等我？',
+  },
+  {
+    id: 'm2p10',
+    speaker: 'narrator',
+    text: '......',
+  },
+]
+export const prologueDialogues3: DialogueLine[] = [
+  {
+    id: 'm3p1',
+    speaker: 'narrator',
+    text: '【系统AI】（飞船穿过紫色能量场）',
+  },
+  {
+    id: 'm3p2',
+    speaker: 'narrator',
+    text: '【系统AI】正在搜索...',
+  },
+]
+export const prologueDialogues4: DialogueLine[] = [
+  {
+    id: 'm4p1',
+    speaker: 'narrator',
+    text: '【系统AI】搜索到10个单词居民。',
+  },
+  {
+    id: 'm4p2',
+    speaker: 'narrator',
+    text: '【系统AI】每个单词都有一个记忆，一个等待被重述的故事。',
+  },
+]
+
+
 
 export const day1MorningDialogues: DialogueLine[] = [
   {
@@ -1534,8 +1598,32 @@ export const storyScenes: StoryScene[] = [
     id: 'prologue',
     day: 0,
     time: 'morning',
-    title: '序幕：星际航行日志',
-    dialogues: prologueDialogues,
+    title: '序幕1：祖父的遗产',
+    dialogues: prologueDialogues1,
+    backgroundImage: '/image/星球1.png',
+  },
+  {
+    id: 'prologue',
+    day: 0,
+    time: 'morning',
+    title: '序幕2：紫色漩涡',
+    dialogues: prologueDialogues2,
+    backgroundImage: '/image/星球1.png',
+  },
+  {
+    id: 'prologue',
+    day: 0,
+    time: 'morning',
+    title: '序幕3：迫降单词星',
+    dialogues: prologueDialogues3,
+    backgroundImage: '/image/星球1.png',
+  },
+  {
+    id: 'prologue',
+    day: 0,
+    time: 'morning',
+    title: '序幕4：Lexicon的出场',
+    dialogues: prologueDialogues4,
     backgroundImage: '/image/星球1.png',
   },
   {
