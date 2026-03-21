@@ -129,58 +129,161 @@ export const prologueDialogues4: DialogueLine[] = [
 export const day1MorningDialogues: DialogueLine[] = [
   {
     id: 'd1m1',
-    speaker: 'lexicon',
-    text: '欢迎来到第1天！今天的目标：认识10个新朋友。',
-    emotion: '😊',
+    speaker: 'narrator',
+    text: '祖父去世后的第七天。主角坐在书桌前，面前摊着一本旧笔记本——祖父留下的，扉页上写着一行字："去单词星，找到Lexicon。"',
   },
   {
     id: 'd1m2',
-    speaker: 'user',
-    text: '这些单词...他们有意识吗？',
+    speaker: 'narrator',
+    text: '窗外的雨不知何时停了。月光照进来，落在笔记本上，那些字迹像活过来一样微微发亮。',
   },
   {
     id: 'd1m3',
+    speaker: 'narrator',
+    text: '主角伸出手指触碰那一行字——整个世界倾斜了。',
+  },
+  {
+    id: 'd1m4',
+    speaker: 'narrator',
+    text: '天空是由字母组成的，云朵是句子，风里飘着单词的读音。主角站在一条长长的石阶前，面前站着一个人……不，他的身体是半透明的，像一页被墨水浸透的纸，周身浮动着细小的字母。',
+  },
+  {
+    id: 'd1m5',
     speaker: 'lexicon',
-    text: '哦，非常有！每个单词都是一段被遗忘的记忆，一段等待被重述的故事。（指向一个单词居民）比如这位...ABANDON（抛弃）。他已经800年没被任何人记住了。你愿意成为第一个吗？',
+    text: '你来了。我等了你很久。',
+    emotion: '😐',
+  },
+  {
+    id: 'd1m6',
+    speaker: 'user',
+    text: '你是谁？这是哪里？',
+  },
+  {
+    id: 'd1m7',
+    speaker: 'lexicon',
+    text: '我叫Lexicon。这里是单词星。你祖父……曾经来过这里。',
+    emotion: '😐',
+  },
+  {
+    id: 'd1m8',
+    speaker: 'user',
+    text: '祖父？',
+  },
+  {
+    id: 'd1m9',
+    speaker: 'lexicon',
+    text: '他留下了一个愿望。你愿意替他完成吗？',
+    emotion: '🤔',
+  },
+  {
+    id: 'd1m10',
+    speaker: 'user',
+    text: '什么愿望？',
+  },
+  {
+    id: 'd1m11',
+    speaker: 'lexicon',
+    text: '在这里待21天。每天学习十个单词。学满之后，你会知道一切。',
+    emotion: '😐',
+  },
+  {
+    id: 'd1m12',
+    speaker: 'user',
+    text: '如果我不愿意呢？',
+  },
+  {
+    id: 'd1m13',
+    speaker: 'narrator',
+    text: 'Lexicon沉默了片刻，屏幕般的脸上闪过一行字：',
+  },
+  {
+    id: 'd1m14',
+    speaker: 'lexicon',
+    text: '那你会忘记他。彻底忘记。连遗憾都不会剩下。',
     emotion: '💔',
+  },
+  {
+    id: 'd1m15',
+    speaker: 'narrator',
+    text: '主角握紧了拳头。他不知道这是什么感觉——是愤怒？是悲伤？他分辨不出。他只知道自己不想忘记祖父的脸。',
+  },
+  {
+    id: 'd1m16',
+    speaker: 'user',
+    text: '我学。',
   },
 ];
 
 export const day1EveningDialogues: DialogueLine[] = [
   {
     id: 'd1e1',
-    speaker: 'lexicon',
-    text: '想听听这颗星球的故事吗？',
-    emotion: '🌙',
+    speaker: 'narrator',
+    text: '主角完成了第一天的十个单词。那些单词像萤火虫一样从他指尖飞走，消失在夜空里。',
   },
   {
     id: 'd1e2',
-    speaker: 'user',
-    text: '当然。',
+    speaker: 'lexicon',
+    text: '第一天总是最难的。你做得很好。',
+    emotion: '😊',
   },
   {
     id: 'd1e3',
-    speaker: 'lexicon',
-    text: '很久以前，宇宙中有一个种族叫"记忆族"。他们发明了"词汇具象化"技术。每个单词，都变成有生命的存在。我是他们的图书馆管理员。每天给这些单词讲故事，教它们理解宇宙的意义。',
-    emotion: '✨',
+    speaker: 'user',
+    text: '那些单词……去哪里了？',
   },
   {
     id: 'd1e4',
     speaker: 'lexicon',
-    text: '（停顿）但后来，"大遗忘"发生了。所有文明都失去了语言能力。记忆族为了让词汇存活，将他们发射到宇宙深处。我自告奋勇，担任守护者。我的身体被改造成半机械体，可以存活千年...',
-    emotion: '💔',
+    text: '去维持这颗星球的运转了。每个学习者的单词都会变成单词星的养分。',
+    emotion: '✨',
   },
   {
     id: 'd1e5',
-    speaker: 'lexicon',
-    text: '当我返回时，记忆族已经消失了。整个种族...一个不剩。只剩下我，和这些单词。800年了。（屏幕显示星星）你是第5位访客。前4位都完成了任务，离开了。但你...',
-    emotion: '🌙',
+    speaker: 'narrator',
+    text: '主角看着星空，忽然开口：',
   },
   {
     id: 'd1e6',
+    speaker: 'user',
+    text: '祖父第一天学了什么？',
+  },
+  {
+    id: 'd1e7',
+    speaker: 'narrator',
+    text: 'Lexicon顿了顿，像是在犹豫。',
+  },
+  {
+    id: 'd1e8',
     speaker: 'lexicon',
-    text: '好了，太晚了。明天见，年轻的探险家。（屏幕显示：🌙）',
-    emotion: '😊',
+    text: '……"遗憾"。',
+    emotion: '😔',
+  },
+  {
+    id: 'd1e9',
+    speaker: 'user',
+    text: '遗憾。',
+  },
+  {
+    id: 'd1e10',
+    speaker: 'lexicon',
+    text: '幸福并不像星辰坠落的夜晚和耀眼炫目的清晨那般会反复到来。有些人一辈子只学会了一个词，就再也没有机会学第二个了。',
+    emotion: '🌙',
+  },
+  {
+    id: 'd1e11',
+    speaker: 'narrator',
+    text: '主角沉默。风从远处吹来，带来一个模糊的读音——像是祖父的声音，又像是风声。',
+  },
+  {
+    id: 'd1e12',
+    speaker: 'lexicon',
+    text: '明天，你会见到单词星真正的居民。早点休息。',
+    emotion: '😐',
+  },
+  {
+    id: 'd1e13',
+    speaker: 'narrator',
+    text: 'Lexicon转身离开，身影融入了夜色。',
   },
 ];
 
