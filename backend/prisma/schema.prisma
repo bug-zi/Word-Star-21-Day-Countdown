@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String
+  password  String   @map("password_hash")
+  avatar    String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // 关联
+  progress       UserProgress?
+  wordProgress   WordProgress[]
+  dayProgress    DayProgress[]
+  reviewSchedules ReviewSchedule[]
+  achievements   UserAchievement[]
+
+  @@map("users")
+}
+
+// 用户进度表
+model UserProgress {
+  id                   String   @id @default(uuid())
+  userId               String   @unique @map("user_id")
+  currentDay           Int      @default(1) @map("current_day")
+  isPrologueCompleted  Boolean  @default(false) @map("is_prologue_completed")
+  currentScene         String   @default("prologue") @map("current_scene")
+  streakDays           Int      @default(0) @map("streak_days")
+  totalWordsLearned    Int      @default(0) @map("total_words_learned")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_progress")
+}
+
+// 单词表（预置数据）
+model Word {
+  id            String  @id @default(uuid())
+  word          String
+  meaning       String
+  pronunciation String?
+  example       String?
+  level         String  // easy, medium, hard
+  day           Int
+  isSpecial     Boolean @default(false) @map("is_special")
+  characterName String? @map("character_name")
+
+  // 关联
+  progress WordProgress[]
+  reviewSchedules ReviewSchedule[]
+
+  @@map("words")
+}
+
+// 单词进度表
+model WordProgress {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  wordId        String    @map("word_id")
+  status        String    @default("new") // new, learning, reviewing, mastered
+  familiarity   Int       @default(0)
+  lastReviewed  DateTime? @map("last_reviewed")
+  nextReview    DateTime? @map("next_review")
+  reviewCount   Int       @default(0) @map("review_count")
+  dayLearned    Int?      @map("day_learned")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordId])
+  @@map("word_progress")
+}
+
+// 复习计划表
+model ReviewSchedule {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  wordId        String    @map("word_id")
+  scheduledDay  Int       @map("scheduled_day")
+  reviewInterval Int      @map("review_interval")
+  isCompleted   Boolean   @default(false) @map("is_completed")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  completedAt   DateTime? @map("completed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@map("review_schedules")
+}
+
+// 每日进度表
+model DayProgress {
+  id                      String   @id @default(uuid())
+  userId                  String   @map("user_id")
+  day                     Int
+  isCompleted             Boolean  @default(false) @map("is_completed")
+  wordsLearned            Int      @default(0) @map("words_learned")
+  morningDialogueCompleted Boolean @default(false) @map("morning_dialogue_completed")
+  eveningDialogueCompleted Boolean @default(false) @map("evening_dialogue_completed")
+  studyCompleted          Boolean  @default(false) @map("study_completed")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@map("day_progress")
+}
+
+// 成就表（预置数据）
+model Achievement {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  icon        String
+  conditionType String @map("condition_type") // days, words, streak
+  conditionValue Int @map("condition_value")
+
+  // 关联
+  users UserAchievement[]
+
+  @@map("achievements")
+}
+
+// 用户成就表
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  achievementId String   @map("achievement_id")
+  unlockedAt    DateTime @default(now()) @map("unlocked_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}

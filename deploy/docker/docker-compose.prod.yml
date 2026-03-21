@@ -1,0 +1,43 @@
+# 腾讯云生产环境 Docker 配置
+version: '3.8'
+
+services:
+  # Nginx 反向代理 + 前端静态文件
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: wordstar-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - wordstar-network
+
+  # 后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    container_name: wordstar-backend
+    environment:
+      - NODE_ENV=production
+      # 部署时修改为腾讯云实际数据库地址
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - PORT=3002
+    ports:
+      - "3002:3002"
+    restart: always
+    networks:
+      - wordstar-network
+
+networks:
+  wordstar-network:
+    driver: bridge
