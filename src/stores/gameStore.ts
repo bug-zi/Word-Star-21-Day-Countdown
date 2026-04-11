@@ -377,19 +377,30 @@ export const useGameStore = create<GameStore>()(
       }
     },
 
-    resetGame: () => set({
-      user: null,
-      isAuthenticated: false,
-      isGuestMode: false,
-      currentDay: 1,
-      isPrologueCompleted: false,
-      daysProgress: Array.from({ length: 21 }, (_, i) => createInitialDayProgress(i + 1)),
-      wordsProgress: wordsData.map(w => createInitialWordProgress(w.id)),
-      currentScene: 'prologue',
-      knownWords: [],
-      reviewSchedule: [],
-      currentDayLearnedWords: 0, // 重置当天学习的单词数
-    }),
+    resetGame: () => {
+      // 清除 localStorage 中的游戏状态
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(GUEST_MODE_KEY);
+        localStorage.removeItem(GUEST_USER_KEY);
+      } catch (e) {
+        console.error('清除本地存储失败:', e);
+      }
+      
+      set({
+        user: null,
+        isAuthenticated: false,
+        isGuestMode: false,
+        currentDay: 1,
+        isPrologueCompleted: false,
+        daysProgress: Array.from({ length: 21 }, (_, i) => createInitialDayProgress(i + 1)),
+        wordsProgress: wordsData.map(w => createInitialWordProgress(w.id)),
+        currentScene: 'prologue',
+        knownWords: [],
+        reviewSchedule: [],
+        currentDayLearnedWords: 0, // 重置当天学习的单词数
+      });
+    },
 
     // Word progress
     updateWordProgress: async (wordId, status, familiarity) => {

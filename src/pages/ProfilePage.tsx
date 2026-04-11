@@ -173,7 +173,7 @@ export default function ProfilePage() {
             whileHover={{ scale: 1.1, rotate: 5 }}
           >
             <img
-              src="/image/用户1.jpg"
+              src="/image/用户1.png"
               alt={user.username}
               className="w-full h-full object-cover"
             />

@@ -108,7 +108,7 @@ export default function ProloguePage() {
               {currentDialogue.speaker === 'lexicon' && (
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-lexicon-gold-500">
                   <img
-                    src="/image/Lexicom1.png"
+                    src="/image/Lexicom.png"
                     alt="Lexicon"
                     className="w-full h-full object-cover"
                   />
@@ -117,7 +117,7 @@ export default function ProloguePage() {
               {currentDialogue.speaker === 'user' && (
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-star-purple-500">
                   <img
-                    src="/image/用户1.jpg"
+                    src="/image/用户1.png"
                     alt="用户"
                     className="w-full h-full object-cover"
                   />
